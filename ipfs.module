@@ -14,31 +14,29 @@ use Cloutier\PhpIpfsApi\IPFS;
 function ipfs_file_insert(FileInterface $entity) {
   $hash = _ipfs_add($entity);
 
-  $fields = array(
+  $fields = [
     'hash' => $hash,
     'fid' => $entity->id(),
-  );
+  ];
 
-  db_insert('ipfs_mapping')
-    ->fields($fields)
-    ->execute();
+  $database = \Drupal::database();
+  $database->insert('ipfs_mapping')->fields($fields)->execute();
 }
 
 /**
  * Implements hook_ENTITY_TYPE_update() for 'file'.
  */
 function ipfs_file_update(FileInterface $entity) {
-  return;
   $hash = _ipfs_add($entity);
 
-  $fields = array(
-    'hash' => $hash,
-    'fid' => $entity->id(),
-  );
+  $fields = [
+    'hash' => $hash
+  ];
 
-  db_update('ipfs_mapping')
+  $database = \Drupal::database();
+  $database->update('ipfs_mapping')
     ->fields($fields)
-    ->execute();
+    ->condition('fid', $entity->id());
 }
 
 /**
