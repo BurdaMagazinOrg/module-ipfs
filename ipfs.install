@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ *
+ * Defines the database tables used by this module.
+ *
+ * @see hook_schema()
+ */
+function ipfs_schema() {
+  $schema['ipfs_mapping'] = array(
+    'description' => 'Stores mapping of file id to IPFS hash.',
+    'fields' => array(
+      'fid' => [
+        'description' => 'File ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'hash' => array(
+        'type' => 'varchar',
+        'length' => 46,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'IPFS hash.',
+      ),
+    ),
+    'primary key' => array('fid'),
+    'indexes' => array('hash' => array('hash')),
+  );
+
+  return $schema;
+}

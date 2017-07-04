@@ -1,0 +1,65 @@
+<?php
+
+use Drupal\file\FileInterface;
+use Cloutier\PhpIpfsApi\IPFS;
+
+/**
+ * @file
+ * Contains ipfs.module.
+ */
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for 'file'.
+ */
+function ipfs_file_insert(FileInterface $entity) {
+  $hash = _ipfs_add($entity);
+
+  $fields = array(
+    'hash' => $hash,
+    'fid' => $entity->id(),
+  );
+
+  db_insert('ipfs_mapping')
+    ->fields($fields)
+    ->execute();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for 'file'.
+ */
+function ipfs_file_update(FileInterface $entity) {
+  return;
+  $hash = _ipfs_add($entity);
+
+  $fields = array(
+    'hash' => $hash,
+    'fid' => $entity->id(),
+  );
+
+  db_update('ipfs_mapping')
+    ->fields($fields)
+    ->execute();
+}
+
+/**
+ * Adjust image element for IPFS loading.
+ *
+ * @param mixed $variables
+ *   Variables for image element.
+ */
+function ipfs_preprocess_image(&$variables) {
+  if (!empty($variables['attributes']['data-ipfs-src'])) {
+    $variables['attributes']['src'] = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  }
+}
+
+/**
+ * @param \Drupal\file\FileInterface $entity
+ * @return mixed
+ */
+function _ipfs_add(FileInterface $entity) {
+  $ipfs = new IPFS("localhost", "8080", "5001");
+  $content = file_get_contents($entity->getFileUri());
+  $hash = $ipfs->add($content);
+  return $hash;
+}

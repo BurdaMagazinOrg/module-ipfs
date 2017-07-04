@@ -1,0 +1,9 @@
+ipfs.image:
+  version: VERSION
+  js:
+    js/ipfs.dist.min.js: {}
+    js/ipfs.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/underscore
