@@ -57,7 +57,8 @@ function ipfs_preprocess_image(&$variables) {
  */
 function _ipfs_add(FileInterface $entity) {
   $ipfs = new IPFS("localhost", "8080", "5001");
-  $content = file_get_contents($entity->getFileUri());
+  $mime = $entity->getMimeType();
+  $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
   $hash = $ipfs->add($content);
   return $hash;
 }
