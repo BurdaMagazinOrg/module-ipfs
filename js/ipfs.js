@@ -6,6 +6,8 @@
 
 (function ($, Drupal, drupalSettings) {
 
+  /* global Ipfs, Uint8Array */
+
   'use strict';
 
   // Create Global variable.
@@ -20,6 +22,7 @@
   Drupal.ipfs = window.DrupalIPFS;
 
   var loadImageBase64Src = function (hash, imgNode, isBase64) {
+    // eslint-disable-next-line no-console
     console.log('Loading image', hash);
 
     var node = Drupal.ipfs.node;
@@ -52,12 +55,17 @@
           imgNode.src = base64Res;
         }
         else {
-          var b64encoded = btoa([].reduce.call(new Uint8Array(rawRes), function (p, c) {return p + String.fromCharCode(c)}, ''));
+          var callbackEncodeBase64 = function (p, c) {
+            return p + String.fromCharCode(c);
+          };
+
+          var b64encoded = btoa([].reduce.call(new Uint8Array(rawRes), callbackEncodeBase64, ''));
           imgNode.src = 'data:image/jpeg;base64,' + b64encoded;
         }
       });
 
       stream.on('error', function (err) {
+        // eslint-disable-next-line no-console
         console.error('Error - ipfs files cat ', err);
       });
     });
@@ -129,6 +137,7 @@
         }
 
         node.start(function () {
+          // eslint-disable-next-line no-console
           console.log('Online status: ', node.isOnline() ? 'online' : 'offline');
 
           Drupal.ipfs.status = node.isOnline();
