@@ -1,0 +1,3 @@
+services:
+  ipfs.client:
+    class: Drupal\ipfs\IpfsClient
