@@ -10,7 +10,5 @@
     "issues": "https://www.drupal.org/project/issues/ipfs",
     "source": "http://cgit.drupalcode.org/ipfs"
   },
-  "require": {
-      "cloutier/php-ipfs-api": "^0.0.6"
-  }
+  "require": {}
 }

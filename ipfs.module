@@ -6,8 +6,7 @@
  */
 
 use Drupal\file\FileInterface;
-use Cloutier\PhpIpfsApi\IPFS;
-
+use Drupal\ipfs\IpfsClient;
 /**
  * @file
  * Contains ipfs.module.
@@ -76,12 +75,37 @@ function ipfs_preprocess_image(&$variables) {
 function _ipfs_add(FileInterface $entity) {
   $settings = \Drupal::config('ipfs.settings');
 
-  $ipfs = new IPFS($settings->get('gateway.address'), $settings->get('gateway.port'), $settings->get('gateway.api_port'));
+  $ipfsClient = new IpfsClient(
+    $settings->get('gateway.address'),
+    $settings->get('gateway.port'),
+    $settings->get('gateway.api_port')
+  );
+
   $mime = $entity->getMimeType();
   $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
-  $hash = $ipfs->add($content);
+
+  $hash = $ipfsClient->addData($content);
   if (empty($hash)) {
     \Drupal::logger('ipfs')->error('Could not add file to Ipfs');
   }
+
   return $hash;
+}
+
+function testIpfs() {
+  $settings = \Drupal::config('ipfs.settings');
+  $entity = file_load(35);
+
+  $ipfsClient = new IpfsClient(
+      $settings->get('gateway.address'),
+      $settings->get('gateway.port'),
+      $settings->get('gateway.api_port')
+    );
+
+  $mime = $entity->getMimeType();
+
+  $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
+  $hash = $ipfsClient->addData($content);
+
+  print_r($hash);
 }
