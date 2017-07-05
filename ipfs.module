@@ -14,6 +14,10 @@ use Cloutier\PhpIpfsApi\IPFS;
 function ipfs_file_insert(FileInterface $entity) {
   $hash = _ipfs_add($entity);
 
+  if (empty($hash)) {
+    return;
+  }
+
   $fields = [
     'hash' => $hash,
     'fid' => $entity->id(),
@@ -28,6 +32,10 @@ function ipfs_file_insert(FileInterface $entity) {
  */
 function ipfs_file_update(FileInterface $entity) {
   $hash = _ipfs_add($entity);
+
+  if (empty($hash)) {
+    return;
+  }
 
   $fields = [
     'hash' => $hash
@@ -56,9 +64,15 @@ function ipfs_preprocess_image(&$variables) {
  * @return mixed
  */
 function _ipfs_add(FileInterface $entity) {
-  $ipfs = new IPFS("localhost", "8080", "5001");
+  $settings = \Drupal::config('ipfs.settings');
+  \Drupal::logger('ipfs')->info($settings->get('gateway_ip'));
+
+  $ipfs = new IPFS($settings->get('gateway_ip'), $settings->get('gateway_port'), $settings->get('gateway_api_port'));
   $mime = $entity->getMimeType();
   $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
   $hash = $ipfs->add($content);
+  if (empty($hash)) {
+    \Drupal::logger('ipfs')->error('Could not add file to Ipfs');
+  }
   return $hash;
 }

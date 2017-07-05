@@ -1,0 +1,13 @@
+ipfs.settings:
+  type: config_object
+  label: 'IPFS settings'
+  mapping:
+    gateway_ip:
+      type: string
+      label: 'IP Address of the gateway'
+    gateway_port:
+      type: integer
+      label: 'Port of the gateway'
+    gateway_api_port:
+      type: integer
+      label: 'API Port of the gateway'
