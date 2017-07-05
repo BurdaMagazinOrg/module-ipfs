@@ -75,7 +75,6 @@ function ipfs_preprocess_image(&$variables) {
  */
 function _ipfs_add(FileInterface $entity) {
   $settings = \Drupal::config('ipfs.settings');
-  \Drupal::logger('ipfs')->info($settings->get('gateway.address'));
 
   $ipfs = new IPFS($settings->get('gateway.address'), $settings->get('gateway.port'), $settings->get('gateway.api_port'));
   $mime = $entity->getMimeType();
