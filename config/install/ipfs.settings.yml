@@ -1,3 +1,4 @@
-gateway_ip: 'localhost'
-gateway_port: 8080
-gateway_api_port: 5001
+gateway:
+  address: 'localhost'
+  port: 8080
+  api_port: 5001

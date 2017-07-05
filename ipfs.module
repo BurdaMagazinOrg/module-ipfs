@@ -75,9 +75,9 @@ function ipfs_preprocess_image(&$variables) {
  */
 function _ipfs_add(FileInterface $entity) {
   $settings = \Drupal::config('ipfs.settings');
-  \Drupal::logger('ipfs')->info($settings->get('gateway_ip'));
+  \Drupal::logger('ipfs')->info($settings->get('gateway.address'));
 
-  $ipfs = new IPFS($settings->get('gateway_ip'), $settings->get('gateway_port'), $settings->get('gateway_api_port'));
+  $ipfs = new IPFS($settings->get('gateway.address'), $settings->get('gateway.port'), $settings->get('gateway.api_port'));
   $mime = $entity->getMimeType();
   $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
   $hash = $ipfs->add($content);
