@@ -10,6 +10,7 @@
   Drupal.behaviors.loadContentOverAjax = {
     attach: function () {
       $('a').once('load-over-ajax').click(function () {
+        // eslint-disable-next-line no-console
         console.log('Loading page', this.href);
 
         $.ajax({
