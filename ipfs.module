@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Implements hooks to store files on IPFS.
+ */
+
 use Drupal\file\FileInterface;
 use Cloutier\PhpIpfsApi\IPFS;
 
@@ -38,7 +43,7 @@ function ipfs_file_update(FileInterface $entity) {
   }
 
   $fields = [
-    'hash' => $hash
+    'hash' => $hash,
   ];
 
   $database = \Drupal::database();
@@ -60,8 +65,13 @@ function ipfs_preprocess_image(&$variables) {
 }
 
 /**
+ * Add a file to IPFS.
+ *
  * @param \Drupal\file\FileInterface $entity
- * @return mixed
+ *   The file entity of the file, that should be added.
+ *
+ * @return string
+ *   The hash identifying the file on IPFS.
  */
 function _ipfs_add(FileInterface $entity) {
   $settings = \Drupal::config('ipfs.settings');

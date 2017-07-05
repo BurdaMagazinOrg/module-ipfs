@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install IPFS Schema.
+ */
+
+/**
  * Implements hook_schema().
  *
  * Defines the database tables used by this module.
@@ -8,26 +13,26 @@
  * @see hook_schema()
  */
 function ipfs_schema() {
-  $schema['ipfs_mapping'] = array(
+  $schema['ipfs_mapping'] = [
     'description' => 'Stores mapping of file id to IPFS hash.',
-    'fields' => array(
+    'fields' => [
       'fid' => [
         'description' => 'File ID.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
-      'hash' => array(
+      'hash' => [
         'type' => 'varchar',
         'length' => 46,
         'not null' => TRUE,
         'default' => '',
         'description' => 'IPFS hash.',
-      ),
-    ),
-    'primary key' => array('fid'),
-    'indexes' => array('hash' => array('hash')),
-  );
+      ],
+    ],
+    'primary key' => ['fid'],
+    'indexes' => ['hash' => ['hash']],
+  ];
 
   return $schema;
 }
