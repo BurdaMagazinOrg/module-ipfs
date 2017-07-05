@@ -54,7 +54,7 @@ function ipfs_file_update(FileInterface $entity) {
  *   Variables for image element.
  */
 function ipfs_preprocess_image(&$variables) {
-  if (!empty($variables['attributes']['data-ipfs-src'])) {
+  if (!empty($variables['attributes']['data-ipfs-src']) || !empty($variables['attributes']['data-ipfs-src-base64'])) {
     $variables['attributes']['src'] = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   }
 }
