@@ -23,6 +23,7 @@ branches:
 
 env:
   global:
+    - PATH="$PATH:$HOME/.composer/vendor/bin"
     - DRUPAL_TI_MODULE_NAME="ipfs"
     - DRUPAL_TI_SIMPLETEST_GROUP=$DRUPAL_TI_MODULE_NAME
 
