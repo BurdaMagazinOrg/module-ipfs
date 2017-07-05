@@ -8,3 +8,13 @@ ipfs.image:
     - core/jquery.once
     - core/drupal
     - core/underscore
+
+ipfs.ajax-content-loader:
+  version: VERSION
+  js:
+    js/ajax-content-loader.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupal
+    - core/underscore

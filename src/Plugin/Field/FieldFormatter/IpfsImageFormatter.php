@@ -151,6 +151,10 @@ class IpfsImageFormatter extends ImageFormatter {
         ],
       ];
       $elements[$delta]['#attached']['library'][] = 'ipfs/ipfs.image';
+
+      if ($this->currentUser->isAnonymous()) {
+        $elements[$delta]['#attached']['library'][] = 'ipfs/ipfs.ajax-content-loader';
+      }
     }
 
     return $elements;

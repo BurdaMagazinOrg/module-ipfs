@@ -12,8 +12,7 @@
   if (typeof DrupalIPFS === 'undefined') {
     window.DrupalIPFS = {
       node: null,
-      status: false,
-      ajaxLoad: true
+      status: false
     };
   }
 
@@ -98,38 +97,6 @@
     });
   };
   Drupal.ipfs.loadAllIpfsImages = loadAllIpfsImages;
-
-  /**
-   * Attach behaviour to load pages over Ajax
-   *
-   * @type {{attach: attach}}
-   */
-  Drupal.behaviors.loadLinksOverAjax = {
-    attach: function () {
-      // If loading of pages over Ajax is desabled, just return.
-      if (!Drupal.ipfs.ajaxLoad) {
-        return;
-      }
-
-      $('a').once('load-over-ajax').click(function () {
-        console.log('Loading page', this.href);
-
-        $.ajax({
-          type: 'get',
-          data: {},
-          url: this.href,
-          dataType: 'html',
-          success: function (response) {
-            $('body').html(response);
-          }
-        });
-
-        history.replaceState({}, '', this.href);
-
-        return false;
-      });
-    }
-  };
 
   /**
    * Registers behaviour to load IPFS when page is loaded.
