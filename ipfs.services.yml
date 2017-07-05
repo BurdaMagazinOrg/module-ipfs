@@ -1,0 +1,14 @@
+services:
+  logger.channel.ipfs:
+    parent: logger.channel_base
+    arguments: ['ipfs']
+
+  ipfs.handler:
+    class: Drupal\ipfs\IpfsHandler
+    arguments: ['@config.factory', '@database', '@logger.channel.ipfs']
+
+  http_middleware.ipfs_page_cache_provider:
+    class: Drupal\ipfs\StackMiddleware\PageCacheProvider
+    arguments: ['@page_cache_response_policy', '@current_user', '@ipfs.handler']
+    tags:
+      - { name: http_middleware, priority: 190 }

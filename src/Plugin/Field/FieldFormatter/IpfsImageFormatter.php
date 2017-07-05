@@ -136,7 +136,8 @@ class IpfsImageFormatter extends ImageFormatter {
       // Add IPFS info to Img tag.
       $query = $this->database->select('ipfs_mapping', 'i');
       $query->addField('i', 'hash');
-      $query->condition('i.fid', $file->id());
+      $query->condition('i.uid', $file->id());
+      $query->condition('i.type', 'file');
       $item_attributes['data-ipfs-src-base64'] = $query->execute()->fetchField();
 
       $elements[$delta] = [

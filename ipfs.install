@@ -16,10 +16,16 @@ function ipfs_schema() {
   $schema['ipfs_mapping'] = [
     'description' => 'Stores mapping of file id to IPFS hash.',
     'fields' => [
-      'fid' => [
-        'description' => 'File ID.',
-        'type' => 'int',
-        'unsigned' => TRUE,
+      'uid' => [
+        'description' => 'Type ID',
+        'type' => 'varchar_ascii',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'type' => [
+        'description' => 'Type of stored IPFS content',
+        'type' => 'varchar_ascii',
+        'length' => 24,
         'not null' => TRUE,
       ],
       'hash' => [
@@ -30,7 +36,7 @@ function ipfs_schema() {
         'description' => 'IPFS hash.',
       ],
     ],
-    'primary key' => ['fid'],
+    'primary key' => ['uid', 'type'],
     'indexes' => ['hash' => ['hash']],
   ];
 
