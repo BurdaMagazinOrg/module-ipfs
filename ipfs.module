@@ -7,6 +7,7 @@
 
 use Drupal\file\FileInterface;
 use Drupal\ipfs\IpfsClient;
+
 /**
  * @file
  * Contains ipfs.module.
@@ -95,4 +96,3 @@ function _ipfs_add(FileInterface $entity) {
 
   return $hash;
 }
-

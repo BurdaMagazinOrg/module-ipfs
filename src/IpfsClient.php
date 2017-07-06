@@ -130,7 +130,9 @@ class IpfsClient implements IpfsClientInterface {
     return $this->curl($url, $content);
   }
 
-
+  /**
+   *
+   */
   protected function curl($url, array $content = []) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -150,11 +152,10 @@ class IpfsClient implements IpfsClientInterface {
       curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
     }
     elseif ($content['data']) {
-      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; boundary=a831rwxi1a3gzaorw1w2z49dlsor'));
+      curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data; boundary=a831rwxi1a3gzaorw1w2z49dlsor']);
       curl_setopt($ch, CURLOPT_POST, 1);
       curl_setopt($ch, CURLOPT_POSTFIELDS, "--a831rwxi1a3gzaorw1w2z49dlsor\r\nContent-Type: application/octet-stream\r\nContent-Disposition: file; \r\n\r\n" . $content['data'] . "\r\n--a831rwxi1a3gzaorw1w2z49dlsor");
     }
-
 
     $output = curl_exec($ch);
 
