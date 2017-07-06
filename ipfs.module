@@ -85,27 +85,14 @@ function _ipfs_add(FileInterface $entity) {
   $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
 
   $hash = $ipfsClient->addData($content);
-  if (empty($hash)) {
-    \Drupal::logger('ipfs')->error('Could not add file to Ipfs');
+
+  try {
+    $hash = $ipfsClient->addData($content);
+  }
+  catch (Exception $e) {
+    \Drupal::logger('ipfs')->error('Could not add file to Ipfs: @message', ['@message' => $e->getMessage()]);
   }
 
   return $hash;
 }
 
-function testIpfs() {
-  $settings = \Drupal::config('ipfs.settings');
-  $entity = file_load(35);
-
-  $ipfsClient = new IpfsClient(
-      $settings->get('gateway.address'),
-      $settings->get('gateway.port'),
-      $settings->get('gateway.api_port')
-    );
-
-  $mime = $entity->getMimeType();
-
-  $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
-  $hash = $ipfsClient->addData($content);
-
-  print_r($hash);
-}
