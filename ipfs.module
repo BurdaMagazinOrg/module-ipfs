@@ -85,8 +85,6 @@ function _ipfs_add(FileInterface $entity) {
   $mime = $entity->getMimeType();
   $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
 
-  $hash = $ipfsClient->addData($content);
-
   try {
     $hash = $ipfsClient->addData($content);
   }
