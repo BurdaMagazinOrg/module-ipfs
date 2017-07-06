@@ -6,50 +6,34 @@
  */
 
 use Drupal\file\FileInterface;
-use Drupal\ipfs\IpfsClient;
 
 /**
- * @file
- * Contains ipfs.module.
+ * Add a file to IPFS.
+ *
+ * @param \Drupal\file\FileInterface $entity
+ *   The file entity of the file, that should be added.
  */
+function _ipfs_add(FileInterface $entity) {
+  $mime = $entity->getMimeType();
+  $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
+
+  /** @var \Drupal\ipfs\IpfsHandler $ipfs */
+  $ipfs = \Drupal::service('ipfs.handler');
+  $ipfs->add($entity->id(), 'file', $content);
+}
 
 /**
  * Implements hook_ENTITY_TYPE_insert() for 'file'.
  */
 function ipfs_file_insert(FileInterface $entity) {
-  $hash = _ipfs_add($entity);
-
-  if (empty($hash)) {
-    return;
-  }
-
-  $fields = [
-    'hash' => $hash,
-    'fid' => $entity->id(),
-  ];
-
-  $database = \Drupal::database();
-  $database->insert('ipfs_mapping')->fields($fields)->execute();
+  _ipfs_add($entity);
 }
 
 /**
  * Implements hook_ENTITY_TYPE_update() for 'file'.
  */
 function ipfs_file_update(FileInterface $entity) {
-  $hash = _ipfs_add($entity);
-
-  if (empty($hash)) {
-    return;
-  }
-
-  $fields = [
-    'hash' => $hash,
-  ];
-
-  $database = \Drupal::database();
-  $database->update('ipfs_mapping')
-    ->fields($fields)
-    ->condition('fid', $entity->id());
+  _ipfs_add($entity);
 }
 
 /**
@@ -62,35 +46,4 @@ function ipfs_preprocess_image(&$variables) {
   if (!empty($variables['attributes']['data-ipfs-src']) || !empty($variables['attributes']['data-ipfs-src-base64'])) {
     $variables['attributes']['src'] = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   }
-}
-
-/**
- * Add a file to IPFS.
- *
- * @param \Drupal\file\FileInterface $entity
- *   The file entity of the file, that should be added.
- *
- * @return string
- *   The hash identifying the file on IPFS.
- */
-function _ipfs_add(FileInterface $entity) {
-  $settings = \Drupal::config('ipfs.settings');
-
-  $ipfsClient = new IpfsClient(
-    $settings->get('gateway.address'),
-    $settings->get('gateway.port'),
-    $settings->get('gateway.api_port')
-  );
-
-  $mime = $entity->getMimeType();
-  $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
-
-  try {
-    $hash = $ipfsClient->addData($content);
-  }
-  catch (Exception $e) {
-    \Drupal::logger('ipfs')->error('Could not add file to Ipfs: @message', ['@message' => $e->getMessage()]);
-  }
-
-  return $hash;
 }

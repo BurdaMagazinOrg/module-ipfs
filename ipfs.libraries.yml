@@ -12,6 +12,7 @@ ipfs.image:
 ipfs.ajax-content-loader:
   version: VERSION
   js:
+    js/ipfs-mapping.js: {}
     js/ajax-content-loader.js: {}
   dependencies:
     - core/jquery

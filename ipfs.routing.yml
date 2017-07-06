@@ -1,0 +1,8 @@
+
+ipfs.ipfs_mapping_controller_getMapping:
+  path: '/ipfs/mapping'
+  defaults:
+    _controller: '\Drupal\ipfs\Controller\IpfsMappingController::getMapping'
+    _title: 'Get Mapping'
+  requirements:
+    _permission: 'access content'
