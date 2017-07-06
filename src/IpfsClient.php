@@ -208,7 +208,7 @@ class IpfsClient implements IpfsClientInterface {
     elseif ($content['data']) {
       curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data; boundary=a831rwxi1a3gzaorw1w2z49dlsor']);
       curl_setopt($ch, CURLOPT_POST, 1);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, "--a831rwxi1a3gzaorw1w2z49dlsor\r\nContent-Type: application/octet-stream\r\nContent-Disposition: file; \r\n\r\n" . $content['data'] . "\r\n--a831rwxi1a3gzaorw1w2z49dlsor");
+      curl_setopt($ch, CURLOPT_POSTFIELDS, "--a831rwxi1a3gzaorw1w2z49dlsor\r\nContent-Type: application/octet-stream\r\nContent-Disposition: file; \r\n\r\n" . $content['data'] . "\r\n--a831rwxi1a3gzaorw1w2z49dlsor\r\n");
     }
 
     $output = curl_exec($ch);
