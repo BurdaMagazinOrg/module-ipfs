@@ -100,6 +100,26 @@ class IpfsHandler {
   }
 
   /**
+   * Get hash if available for uid and type.
+   *
+   * @param string $uid
+   *   Unique ID for page IPFS mapping.
+   * @param string $type
+   *   Type of mapping tyo save.
+   *
+   * @return mixed
+   *   Returns hash for uid and type.
+   */
+  public function getHash($uid, $type) {
+    $query = $this->database->select('ipfs_mapping', 'i');
+    $query->addField('i', 'hash');
+    $query->condition('i.uid', $uid);
+    $query->condition('i.type', $type);
+
+    return $query->execute()->fetchField();
+  }
+
+  /**
    * Store mapping for cached pages.
    *
    * @param string $uid
@@ -110,12 +130,7 @@ class IpfsHandler {
    *   Hash of page.
    */
   protected function storeMapping($uid, $type, $hash) {
-    $query = $this->database->select('ipfs_mapping', 'i');
-    $query->addField('i', 'hash');
-    $query->condition('i.uid', $uid);
-    $query->condition('i.type', $type);
-
-    if ($query->execute()->fetchField()) {
+    if ($this->getHash($uid, $type)) {
       $this->database->update('ipfs_mapping')
         ->fields(['hash' => $hash])
         ->condition('uid', $uid)

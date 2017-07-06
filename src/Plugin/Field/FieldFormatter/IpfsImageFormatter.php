@@ -2,13 +2,13 @@
 
 namespace Drupal\ipfs\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Database\Connection;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\ipfs\IpfsHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
 
@@ -26,11 +26,11 @@ use Drupal\Core\Cache\Cache;
 class IpfsImageFormatter extends ImageFormatter {
 
   /**
-   * The database.
+   * IPFS Handler service.
    *
-   * @var \Drupal\Core\Database\Connection
+   * @var \Drupal\ipfs\IpfsHandler
    */
-  protected $database;
+  protected $ipfsHandler;
 
   /**
    * Constructs an ImageFormatter object.
@@ -53,12 +53,12 @@ class IpfsImageFormatter extends ImageFormatter {
    *   The current user.
    * @param \Drupal\Core\Entity\EntityStorageInterface $image_style_storage
    *   The entity storage for the image.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database.
+   * @param \Drupal\ipfs\IpfsHandler $ipfsHandler
+   *   IPFS Handler service.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, EntityStorageInterface $image_style_storage, Connection $database) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, EntityStorageInterface $image_style_storage, IpfsHandler $ipfsHandler) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, $current_user, $image_style_storage);
-    $this->database = $database;
+    $this->ipfsHandler = $ipfsHandler;
   }
 
   /**
@@ -75,7 +75,7 @@ class IpfsImageFormatter extends ImageFormatter {
       $configuration['third_party_settings'],
       $container->get('current_user'),
       $container->get('entity.manager')->getStorage('image_style'),
-      $container->get('database')
+      $container->get('ipfs.handler')
     );
   }
 
@@ -134,11 +134,7 @@ class IpfsImageFormatter extends ImageFormatter {
       unset($item->_attributes);
 
       // Add IPFS info to Img tag.
-      $query = $this->database->select('ipfs_mapping', 'i');
-      $query->addField('i', 'hash');
-      $query->condition('i.uid', $file->id());
-      $query->condition('i.type', 'file');
-      $item_attributes['data-ipfs-src-base64'] = $query->execute()->fetchField();
+      $item_attributes['data-ipfs-src-base64'] = $this->ipfsHandler->getHash($file->id(), 'file');
 
       $elements[$delta] = [
         '#theme' => 'image_formatter',

@@ -36,6 +36,25 @@
     return '';
   };
 
+  var loadMapping = function () {
+    $.ajax({
+      type: 'get',
+      data: {},
+      url: '/ipfs/mapping',
+      dataType: 'html',
+      success: function (response) {
+        DrupalIPFSMapping.data = JSON.parse(response);
+      }
+    });
+  };
+
+  var initMapLoader = function () {
+    loadMapping();
+
+    // Load mapping every 10sec
+    DrupalIPFSMapping.loader = setInterval(loadMapping, 10000);
+  };
+
   /**
    * Attach behaviour to load pages over Ajax
    *
@@ -44,22 +63,7 @@
   Drupal.behaviors.loadIpfsMapping = {
     attach: function () {
       if (!DrupalIPFSMapping.loader) {
-        var loadMapping = function () {
-          $.ajax({
-            type: 'get',
-            data: {},
-            url: '/ipfs/mapping',
-            dataType: 'html',
-            success: function (response) {
-              DrupalIPFSMapping.data = JSON.parse(response);
-            }
-          });
-        };
-
-        loadMapping();
-
-        // Load mapping every 10sec
-        DrupalIPFSMapping.loader = setInterval(loadMapping, 10000);
+        initMapLoader();
       }
     }
   };
