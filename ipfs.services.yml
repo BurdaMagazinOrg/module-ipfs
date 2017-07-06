@@ -5,7 +5,7 @@ services:
 
   ipfs.handler:
     class: Drupal\ipfs\IpfsHandler
-    arguments: ['@config.factory', '@database', '@logger.channel.ipfs']
+    arguments: ['@config.factory', '@cache_tags.invalidator', '@database', '@logger.channel.ipfs']
 
   http_middleware.ipfs_page_cache_provider:
     class: Drupal\ipfs\StackMiddleware\PageCacheProvider

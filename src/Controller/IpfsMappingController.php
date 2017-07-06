@@ -2,10 +2,10 @@
 
 namespace Drupal\ipfs\Controller;
 
+use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\ipfs\IpfsHandler;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class IpfsMappingController.
@@ -44,7 +44,11 @@ class IpfsMappingController extends ControllerBase {
    *   Return JSON of IPFS mapping.
    */
   public function getMapping() {
-    return new JsonResponse($this->ipfsHandler->getMapping());
+    $response = new CacheableJsonResponse($this->ipfsHandler->getMapping());
+
+    $response->getCacheableMetadata()->addCacheTags(['ipfs_get_mapping']);
+
+    return $response;
   }
 
 }

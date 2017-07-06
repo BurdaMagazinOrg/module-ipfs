@@ -2,6 +2,7 @@
 
 namespace Drupal\ipfs;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelInterface;
@@ -37,17 +38,27 @@ class IpfsHandler {
   protected $database;
 
   /**
+   * Cache tags invalidator service.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagInvalidator;
+
+  /**
    * IpfsHandler constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   Config factory service.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagInvalidator
+   *   Cache tags invalidator service.
    * @param \Drupal\Core\Database\Connection $database
    *   The database.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   IPFS logger channel.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, Connection $database, LoggerChannelInterface $logger) {
+  public function __construct(ConfigFactoryInterface $configFactory, CacheTagsInvalidatorInterface $cacheTagInvalidator, Connection $database, LoggerChannelInterface $logger) {
     $this->settings = $configFactory->get('ipfs.settings');
+    $this->cacheTagInvalidator = $cacheTagInvalidator;
     $this->logger = $logger;
     $this->database = $database;
   }
@@ -146,6 +157,9 @@ class IpfsHandler {
 
       $this->database->insert('ipfs_mapping')->fields($fields)->execute();
     }
+
+    // Invalidate cache for IPFS mapping, because there are new changes.
+    $this->cacheTagInvalidator->invalidateTags(['ipfs_get_mapping']);
   }
 
   /**
