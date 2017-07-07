@@ -187,9 +187,7 @@ class IpfsImageFormatter extends ImageFormatter {
 
     $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($uri));
 
-    /** @var \Drupal\ipfs\IpfsHandler $ipfs */
-    $ipfs = \Drupal::service('ipfs.handler');
-    return $ipfs->add($this->getUid($image), 'file', $content);
+    return $this->ipfsHandler->add($this->getUid($image), 'file', $content);
   }
 
   /**
