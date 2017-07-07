@@ -2,39 +2,8 @@
 
 /**
  * @file
- * Implements hooks to store files on IPFS.
+ * Implements hooks for IPFS.
  */
-
-use Drupal\file\FileInterface;
-
-/**
- * Add a file to IPFS.
- *
- * @param \Drupal\file\FileInterface $entity
- *   The file entity of the file, that should be added.
- */
-function _ipfs_add(FileInterface $entity) {
-  $mime = $entity->getMimeType();
-  $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($entity->getFileUri()));
-
-  /** @var \Drupal\ipfs\IpfsHandler $ipfs */
-  $ipfs = \Drupal::service('ipfs.handler');
-  $ipfs->add($entity->id(), 'file', $content);
-}
-
-/**
- * Implements hook_ENTITY_TYPE_insert() for 'file'.
- */
-function ipfs_file_insert(FileInterface $entity) {
-  _ipfs_add($entity);
-}
-
-/**
- * Implements hook_ENTITY_TYPE_update() for 'file'.
- */
-function ipfs_file_update(FileInterface $entity) {
-  _ipfs_add($entity);
-}
 
 /**
  * Adjust image element for IPFS loading.
