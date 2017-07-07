@@ -177,12 +177,16 @@ class IpfsImageFormatter extends ImageFormatter {
   protected function ipfsAdd(FileInterface $image) {
     $mime = $image->getMimeType();
 
+    $uri = $image->getFileUri();
     if ($image_style = $this->getSetting('image_style')) {
-      $style = ImageStyle::load('thumbnail');
-      $uri = $style->buildUri($image->getFileUri());
-    }
-    else {
-      $uri = $image->getFileUri($image_style);
+      $originalUri = $uri;
+
+      $style = ImageStyle::load($image_style);
+      $uri = $style->buildUri($originalUri);
+
+      if (!file_exists($uri)) {
+        $style->createDerivative($originalUri, $uri);
+      }
     }
 
     $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($uri));
