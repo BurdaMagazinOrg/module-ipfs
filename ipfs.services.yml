@@ -12,3 +12,11 @@ services:
     arguments: ['@page_cache_response_policy', '@current_user', '@ipfs.handler']
     tags:
       - { name: http_middleware, priority: 190 }
+
+  asset.css.dumper:
+    class: Drupal\ipfs\IpfsAssetDumper
+    arguments: ['@ipfs.handler']
+
+  asset.js.dumper:
+    class: Drupal\ipfs\IpfsAssetDumper
+    arguments: ['@ipfs.handler']
