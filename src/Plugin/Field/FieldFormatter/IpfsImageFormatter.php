@@ -113,10 +113,6 @@ class IpfsImageFormatter extends ImageFormatter {
     if (!empty($image_style_setting)) {
       $image_style = $this->imageStyleStorage->load($image_style_setting);
       $base_cache_tags = $image_style->getCacheTags();
-      $ipfs_uid_prefix = $image_style_setting . ':';
-    }
-    else {
-      $ipfs_uid_prefix = '';
     }
 
     foreach ($files as $delta => $file) {
@@ -140,11 +136,10 @@ class IpfsImageFormatter extends ImageFormatter {
       unset($item->_attributes);
 
       // Add IPFS info to Img tag.
-      $ipfs_uid = $ipfs_uid_prefix . $file->id();
-      $hash = $this->ipfsHandler->getHash($ipfs_uid, 'file');
+      $hash = $this->ipfsHandler->getHash($this->getUid($file), 'file');
 
       if (empty($hash)) {
-        $hash = $this->ipfsAdd($file, $ipfs_uid, $image_style_setting);
+        $hash = $this->ipfsAdd($file);
       }
 
       $item_attributes['data-ipfs-src-base64'] = $hash;
@@ -179,10 +174,10 @@ class IpfsImageFormatter extends ImageFormatter {
    * @return string
    *   The file hash.
    */
-  protected function ipfsAdd(FileInterface $image, $ipfs_uid, $image_style = NULL) {
+  protected function ipfsAdd(FileInterface $image) {
     $mime = $image->getMimeType();
 
-    if ($image_style) {
+    if ($image_style = $this->getSetting('image_style')) {
       $style = ImageStyle::load('thumbnail');
       $uri = $style->buildUri($image->getFileUri());
     }
@@ -194,7 +189,25 @@ class IpfsImageFormatter extends ImageFormatter {
 
     /** @var \Drupal\ipfs\IpfsHandler $ipfs */
     $ipfs = \Drupal::service('ipfs.handler');
-    return $ipfs->add($ipfs_uid, 'file', $content);
+    return $ipfs->add($this->getUid($image), 'file', $content);
   }
 
+  /**
+   * Create a uid for a file with an image style.
+   *
+   * @param \Drupal\file\FileInterface $image
+   *   The file entity.
+   *
+   * @return string
+   *   The uid for this image.
+   */
+  protected function getUid(FileInterface $image) {
+    $uid_parts = [$image->id()];
+
+    if ($image_style = $this->getSetting('image_style')) {
+      $uid_parts[] = $image_style;
+    }
+
+    return implode(':', $uid_parts);
+  }
 }
