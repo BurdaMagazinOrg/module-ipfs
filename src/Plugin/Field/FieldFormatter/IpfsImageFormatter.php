@@ -2,6 +2,7 @@
 
 namespace Drupal\ipfs\Plugin\Field\FieldFormatter;
 
+use Drupal\file\FileInterface;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -11,6 +12,7 @@ use Drupal\Core\Url;
 use Drupal\ipfs\IpfsHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
+use Drupal\image\Entity\ImageStyle;
 
 /**
  * Plugin implementation of the 'ipfs_image_formatter' formatter.
@@ -111,6 +113,10 @@ class IpfsImageFormatter extends ImageFormatter {
     if (!empty($image_style_setting)) {
       $image_style = $this->imageStyleStorage->load($image_style_setting);
       $base_cache_tags = $image_style->getCacheTags();
+      $ipfs_uid_prefix = $image_style_setting . ':';
+    }
+    else {
+      $ipfs_uid_prefix = '';
     }
 
     foreach ($files as $delta => $file) {
@@ -134,7 +140,14 @@ class IpfsImageFormatter extends ImageFormatter {
       unset($item->_attributes);
 
       // Add IPFS info to Img tag.
-      $item_attributes['data-ipfs-src-base64'] = $this->ipfsHandler->getHash($file->id(), 'file');
+      $ipfs_uid = $ipfs_uid_prefix . $file->id();
+      $hash = $this->ipfsHandler->getHash($ipfs_uid, 'file');
+
+      if (empty($hash)) {
+        $hash = $this->ipfsAdd($file, $ipfs_uid, $image_style_setting);
+      }
+
+      $item_attributes['data-ipfs-src-base64'] = $hash;
 
       $elements[$delta] = [
         '#theme' => 'image_formatter',
@@ -155,6 +168,33 @@ class IpfsImageFormatter extends ImageFormatter {
     }
 
     return $elements;
+  }
+
+  /**
+   * Add file to IPFS.
+   *
+   * @param \Drupal\file\FileInterface $image
+   *   The file entity.
+   *
+   * @return string
+   *   The file hash.
+   */
+  protected function ipfsAdd(FileInterface $image, $ipfs_uid, $image_style = NULL) {
+    $mime = $image->getMimeType();
+
+    if ($image_style) {
+      $style = ImageStyle::load('thumbnail');
+      $uri = $style->buildUri($image->getFileUri());
+    }
+    else {
+      $uri = $image->getFileUri($image_style);
+    }
+
+    $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($uri));
+
+    /** @var \Drupal\ipfs\IpfsHandler $ipfs */
+    $ipfs = \Drupal::service('ipfs.handler');
+    return $ipfs->add($ipfs_uid, 'file', $content);
   }
 
 }
