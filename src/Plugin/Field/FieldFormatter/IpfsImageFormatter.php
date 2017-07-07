@@ -210,4 +210,5 @@ class IpfsImageFormatter extends ImageFormatter {
 
     return implode(':', $uid_parts);
   }
+
 }
