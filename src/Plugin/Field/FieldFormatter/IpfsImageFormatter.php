@@ -2,6 +2,7 @@
 
 namespace Drupal\ipfs\Plugin\Field\FieldFormatter;
 
+use Drupal\file\FileInterface;
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatter;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -11,6 +12,7 @@ use Drupal\Core\Url;
 use Drupal\ipfs\IpfsHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Cache\Cache;
+use Drupal\image\Entity\ImageStyle;
 
 /**
  * Plugin implementation of the 'ipfs_image_formatter' formatter.
@@ -134,7 +136,13 @@ class IpfsImageFormatter extends ImageFormatter {
       unset($item->_attributes);
 
       // Add IPFS info to Img tag.
-      $item_attributes['data-ipfs-src-base64'] = $this->ipfsHandler->getHash($file->id(), 'file');
+      $hash = $this->ipfsHandler->getHash($this->getUid($file), 'file');
+
+      if (empty($hash)) {
+        $hash = $this->ipfsAdd($file);
+      }
+
+      $item_attributes['data-ipfs-src-base64'] = $hash;
 
       $elements[$delta] = [
         '#theme' => 'image_formatter',
@@ -155,6 +163,54 @@ class IpfsImageFormatter extends ImageFormatter {
     }
 
     return $elements;
+  }
+
+  /**
+   * Add file to IPFS.
+   *
+   * @param \Drupal\file\FileInterface $image
+   *   The file entity.
+   *
+   * @return string
+   *   The file hash.
+   */
+  protected function ipfsAdd(FileInterface $image) {
+    $mime = $image->getMimeType();
+
+    $uri = $image->getFileUri();
+    if ($image_style = $this->getSetting('image_style')) {
+      $originalUri = $uri;
+
+      $style = ImageStyle::load($image_style);
+      $uri = $style->buildUri($originalUri);
+
+      if (!file_exists($uri)) {
+        $style->createDerivative($originalUri, $uri);
+      }
+    }
+
+    $content = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($uri));
+
+    return $this->ipfsHandler->add($this->getUid($image), 'file', $content);
+  }
+
+  /**
+   * Create a uid for a file with an image style.
+   *
+   * @param \Drupal\file\FileInterface $image
+   *   The file entity.
+   *
+   * @return string
+   *   The uid for this image.
+   */
+  protected function getUid(FileInterface $image) {
+    $uid_parts = [$image->id()];
+
+    if ($image_style = $this->getSetting('image_style')) {
+      $uid_parts[] = $image_style;
+    }
+
+    return implode(':', $uid_parts);
   }
 
 }
