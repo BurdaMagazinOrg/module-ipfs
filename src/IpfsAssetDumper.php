@@ -36,8 +36,6 @@ class IpfsAssetDumper extends AssetDumper {
 
     $this->ipfsHandler->add($uid, $type, $data);
 
-    file_put_contents('test.txt', $uri . PHP_EOL, FILE_APPEND);
-
     return $uri;
   }
 
