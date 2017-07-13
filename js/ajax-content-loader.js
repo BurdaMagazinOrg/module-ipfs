@@ -4,19 +4,9 @@
 
   /* global DrupalIPFSMapping */
 
-  var getAvailablePageHash = function (url) {
-    var hash = '';
-
-    if (typeof DrupalIPFSMapping !== 'undefined') {
-      hash = DrupalIPFSMapping.getPageHash(url);
-    }
-
-    return hash;
-  };
-
-  var loadFromIpfs = function (hash) {
+  var loadFromIpfs = function (hash, responseHandler) {
     // eslint-disable-next-line no-console
-    console.log('Loading page', hash);
+    console.log('Loading content from IPFS', hash);
 
     var node = Drupal.ipfs.node;
 
@@ -32,7 +22,7 @@
       });
 
       stream.on('end', function () {
-        $('body').html(pageResult);
+        responseHandler(pageResult);
       });
 
       stream.on('error', function (err) {
@@ -42,9 +32,9 @@
     });
   };
 
-  var loadDirect = function (url) {
+  var loadFromUrl = function (url, responseHandler) {
     // eslint-disable-next-line no-console
-    console.log('Loading page', url);
+    console.log('Loading content from URL', url);
 
     $.ajax({
       type: 'get',
@@ -52,9 +42,104 @@
       url: url,
       dataType: 'html',
       success: function (response) {
-        $('body').html(response);
+        responseHandler(response);
       }
     });
+  };
+
+  var getAvailableAssetHash = function (url) {
+    var hash = '';
+
+    if (typeof DrupalIPFSMapping !== 'undefined') {
+      hash = DrupalIPFSMapping.getAssetHash(url);
+    }
+
+    return hash;
+  };
+
+  var getAvailablePageHash = function (url) {
+    var hash = '';
+
+    if (typeof DrupalIPFSMapping !== 'undefined') {
+      hash = DrupalIPFSMapping.getPageHash(url);
+    }
+
+    return hash;
+  };
+
+  var processCssResponse = function (response) {
+    var s = document.createElement('style');
+    s.innerHTML = response;
+
+    $('head').append(s);
+  };
+
+  var processPageResponse = function (response) {
+    var el = document.createElement('html');
+    el.innerHTML = response;
+    var $element = $(el);
+
+    // Load CSS for new page and remove old one.
+    $element.find('head link[rel="stylesheet"][media="all"]').each(loadCss);
+    $('head link[rel="stylesheet"][media="all"]').remove();
+
+    // Prepare JS links.
+    var jsUrls = [];
+    $element.find('script[src]').each(function () {
+      jsUrls.push(this.src);
+      $(this).remove();
+    });
+
+    // Load body.
+    $('body').replaceWith($element.find('body'));
+
+    // Load Javascript files after body content is placed.
+    jsUrls.forEach(loadJs);
+  };
+
+  /**
+   * Loading of javascript over ajax requeest or IPFS.
+   *
+   * jQuery.globalEval() is used to execute fetched JS code.
+   *
+   * @param {string} url
+   *   Url to JS asset.
+   */
+  var loadJs = function (url) {
+    var hash = getAvailableAssetHash(url);
+    if (hash && Drupal.ipfs.status) {
+      loadFromIpfs(hash, $.globalEval);
+    }
+    else {
+      loadFromUrl(url, $.globalEval);
+    }
+  };
+
+  var loadCss = function () {
+    var url = this.href;
+
+    var hash = getAvailableAssetHash(url);
+    if (hash && Drupal.ipfs.status) {
+      loadFromIpfs(hash, processCssResponse);
+    }
+    else {
+      loadFromUrl(url, processCssResponse);
+    }
+  };
+
+  var loadPage = function () {
+    var hash = getAvailablePageHash(this.href);
+    if (hash && Drupal.ipfs.status) {
+      loadFromIpfs(hash, processPageResponse);
+    }
+    else {
+      loadFromUrl(this.href, processPageResponse);
+    }
+
+    // Set correct URL in address bar.
+    history.replaceState({}, '', this.href);
+
+    return false;
   };
 
   /**
@@ -62,22 +147,9 @@
    *
    * @type {{attach: attach}}
    */
-  Drupal.behaviors.loadContentOverAjax = {
+  Drupal.behaviors.registerLoadPagesOverAjax = {
     attach: function () {
-      $('a').once('load-over-ajax').click(function () {
-        var hash = getAvailablePageHash(this.href);
-        if (hash && Drupal.ipfs.status) {
-          loadFromIpfs(hash);
-        }
-        else {
-          loadDirect(this.href);
-        }
-
-        // Set correct URL in address bar.
-        history.replaceState({}, '', this.href);
-
-        return false;
-      });
+      $('a').once('load-over-ajax').click(loadPage);
     }
   };
 

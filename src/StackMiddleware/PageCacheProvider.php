@@ -108,6 +108,11 @@ class PageCacheProvider implements HttpKernelInterface {
       return FALSE;
     }
 
+    // Ignore storing mapping to IPFS.
+    if ($request->getRequestUri() === '/ipfs/mapping') {
+      return FALSE;
+    }
+
     return TRUE;
   }
 

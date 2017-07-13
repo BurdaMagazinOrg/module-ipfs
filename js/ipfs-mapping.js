@@ -36,6 +36,20 @@
     return '';
   };
 
+  DrupalIPFSMapping.getAssetHash = function (url) {
+    var mappingData = DrupalIPFSMapping.data;
+
+    for (var i = 0; i < mappingData.length; i++) {
+      var mappingEntry = mappingData[i];
+
+      if ((mappingEntry.type === 'css' || mappingEntry.type === 'js') && url.indexOf(mappingEntry.uid) !== -1) {
+        return mappingEntry.hash;
+      }
+    }
+
+    return '';
+  };
+
   var loadMapping = function () {
     $.ajax({
       type: 'get',
